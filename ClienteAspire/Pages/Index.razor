@@ -6,33 +6,16 @@
 @attribute [Authorize]
 
 
-
-
-<style>
-    .mud-table-cell-custom-group {
-        font-weight: 500;
-    }
-
-    .mud-table-cell-custom-group-footer {
-        padding-bottom: 50px;
-        text-align: right;
-    }
-
-    .mud-input.mud-input-underline:after {
-        border-bottom: 2px solid var(--mud-palette-tertiary) !important;
-    }
-</style>
-
 @*Agrupar*@
 <div class="d-flex row">
-    <MudChipSet AllClosable="true" Class="col-auto mt-3" OnClose="CerrarAgrupar">
+    <MudChipSet AllClosable="true" Class="col-auto mt-3"  OnClose="CerrarAgrupar">
         @foreach (var value in agrupacionesList)
         {
             <MudChip Color="Color.Tertiary" Text="@value"></MudChip>
         }
     </MudChipSet>
     
-    <MudItem xs="12" sm="6" md="2" Class="mr-auto">
+    <MudItem Class="col-auto mr-auto pl-0">
     @if (MostrarAgrupar)
     {
             <MudSelect T="string" Label="Campo a Agrupar" SelectedValuesChanged="AplicarAgrupar" Variant="Variant.Text" @bind-Value="CampoAgrupar" OffsetY="true" Margin="Margin.Dense" Dense="true">
@@ -44,7 +27,7 @@
     }
     else
     {
-        <div class="mr-auto mt-3 col-2">
+        <div class="mr-auto mt-3 col-2" style="margin-left:-16px;">
 
             <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" aria-label="add" Color="Color.Tertiary" OnClick="Agrupar">Agrupar</MudButton>
         </div>
@@ -54,7 +37,7 @@
 </div>
 
 @*Filtrar*@
-<div class="row">
+<div class="row mt-1" >
     <MudChipSet AllClosable="true" Class="col-auto " OnClose="CerrarFiltrar">
         @foreach (var filter in filtrosList)
         {
@@ -62,7 +45,7 @@
         }
     </MudChipSet>
 
-    <MudItem Class="col-4 mr-auto">
+    <MudItem Class="col-auto mr-auto pl-0" id="filtrado-items">
         @if (string.IsNullOrEmpty(CampoFiltrar))
         {
           <MudMenu FullWidth="true" MaxHeight="200" Style="width:150px;" Dense="true">
@@ -96,13 +79,13 @@
                             @if (EsRangoFecha)
                             {
                                 <div style="width:240px;">
-                                    <MudDateRangePicker Label="Seleccione Rango de Fecha" DateFormat="dd/MM/yyyy" Elevation="12" DateRangeChanged="RangoFechaCambiada" />
+                                    <MudDateRangePicker Label="Seleccione Rango de Fecha" DateFormat="@Constantes.FORMATO_FECHA" Elevation="12" DateRangeChanged="RangoFechaCambiada" />
                                 </div>
                             }
                             else
                             {
                                 <div style="width: 173px;">
-                                <MudDatePicker DateChanged="FechaCambiada" DisableToolbar="true" Elevation="12" DateFormat="dd/MM/yyyy" Placeholder="Seleccione Fecha" />
+                                <MudDatePicker DateChanged="FechaCambiada" DisableToolbar="true" Elevation="12" DateFormat="@Constantes.FORMATO_FECHA" Placeholder="Seleccione Fecha" />
                                 </div >
                             }
                         </div >
@@ -110,7 +93,8 @@
                     }
                     else
                     {
-                    <MudTextField  @bind-Value="buscarString"  OnBlur="FilterFunc" Placeholder="Buscar" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    <MudTextField  @bind-Value="buscarString"  OnBlur="FilterFunc" Placeholder="Buscar" Adornment="Adornment.Start" 
+                    AdornmentIcon="@Icons.Material.Filled.Search"  FullWidth="true" IconSize="Size.Medium" Class="mt-0"></MudTextField>
                     }
 
                 </div>
@@ -155,8 +139,8 @@
         <MudTd DataLabel="Nombre de Tabla">@context.TableName</MudTd>
         <MudTd DataLabel="Viejos Valores">@context.OldValues</MudTd>
         <MudTd DataLabel="Nuevos Valores">@context.NewValues</MudTd>
-        <MudTd DataLabel="Fecha Maquina'">@context.MachineDate.ToString(FORMATO_FECHA)</MudTd>
-        <MudTd DataLabel="Fecha Sistema">@context.SystemDate.ToString(FORMATO_FECHA)</MudTd>
+        <MudTd DataLabel="Fecha Maquina'">@context.MachineDate.ToString(Constantes.FORMATO_FECHA)</MudTd>
+        <MudTd DataLabel="Fecha Sistema">@context.SystemDate.ToString(Constantes.FORMATO_FECHA)</MudTd>
         <MudTd DataLabel="Nombre Usuario">@context.UserName</MudTd>
         <MudTd DataLabel="Id Oficina">@context.OfficeId</MudTd>
 
@@ -168,26 +152,22 @@
 
 @code {
     public bool MostrarAgrupar { get; set; } = false;
-    public bool MostrarFiltrar { get; set; } = false;
     public string CampoAgrupar { get; set; }
     public string CampoFiltrar { get; set; }
-    public string Condicion { get; set; }
-    private string buscarString = "";
+    private string buscarString = string.Empty;
     public string ValorAFiltrar { get; set; }
-    public bool DisabledButton { get; set; } = true;
     List<string> agrupacionesList = new List<string>();
     List<string> filtrosList = new List<string>();
     List<string> camposModeloAgruparList = new List<string>();
     List<string> condicionesList = new();
     List<string> condicionesDateList = new();
     List<string> condicionesShowList = new();
-    Dictionary<string, string> FiltroDict = new();
     List<ModeloFiltro> modFiltroList = new();
     public bool EsFecha = false;
     public bool EsRangoFecha = false;
     public DateTime? dateToFilter = null;
-    public DateRange rangoFecha = new DateRange(DateTime.Now.AddDays(-5).Date, DateTime.Now.Date);
-    const string FORMATO_FECHA = "dd/MM/yyyy";
+    public DateRange? rangoFecha;
+
 
     public TableGroupDefinition<AuditLog> _groupDefinition;
 
@@ -384,12 +364,12 @@
         if (campoModelo.Contains("Fecha"))
         {
             EsFecha = true;
-            condicionesShowList=condicionesDateList.Select(x =>  $"{campoModelo}, {x}, ").ToList();            
+            condicionesShowList=condicionesDateList.Select(x => $"{campoModelo}, {x}, ").ToList();            
         }
         else
         {
             EsFecha = false;
-            condicionesShowList=condicionesList.Select(x =>  $"{campoModelo}, {x}, ").ToList();
+            condicionesShowList=condicionesList.Select(x => $"{campoModelo}, {x}, ").ToList();
         }
 
         CampoFiltrar = condicionesShowList.FirstOrDefault();
@@ -400,7 +380,7 @@
     public void CerrarFiltrar(MudChip chip)
     {
         filtrosList.Remove(chip.Class);
-        var propiedadFiltrar = BorrarTodosLosCaracteresDespuesDe(',', chip.Class);
+        var propiedadFiltrar = chip.Class.BorrarTodosLosCaracteresDespuesDe(',');
         var indicePropiedadQuitarFiltro = modFiltroList.Select(x => x.NombrePropiedad).IndexOf(propiedadFiltrar); 
         modFiltroList[indicePropiedadQuitarFiltro].EstaVisible=true;
         modFiltroList[indicePropiedadQuitarFiltro].Condicion = string.Empty;
@@ -412,12 +392,12 @@
         dateToFilter = value;
         FilterFunc();
     }
+
     public void RangoFechaCambiada(DateRange value)
     {
         rangoFecha = value;
         FilterFunc();
     }
-
 
     private void FilterFunc()
     {
@@ -427,14 +407,14 @@
 
         if(!string.IsNullOrEmpty(CampoFiltrar) && (!string.IsNullOrEmpty(buscarString) || EsFecha))
         {
-            var strToAdd = dateToFilter != null ? dateToFilter?.ToString(FORMATO_FECHA) ?? DateTime.Today.ToString(FORMATO_FECHA) : buscarString;
+            var strToAdd = dateToFilter != null ? dateToFilter?.ToString(Constantes.FORMATO_FECHA) ?? DateTime.Today.ToString(Constantes.FORMATO_FECHA) : buscarString;
             if(dateToFilter != null)
             {
-                strToAdd = dateToFilter?.ToString(FORMATO_FECHA) ?? DateTime.Today.ToString(FORMATO_FECHA);
+                strToAdd = dateToFilter?.ToString(Constantes.FORMATO_FECHA) ?? DateTime.Today.ToString(Constantes.FORMATO_FECHA);
             }
             else if (rangoFecha!=null)
             {
-                strToAdd = rangoFecha.Start?.ToString(FORMATO_FECHA) + " -> " + rangoFecha.End?.ToString(FORMATO_FECHA);
+                strToAdd = rangoFecha.Start?.ToString(Constantes.FORMATO_FECHA) + " -> " + rangoFecha.End?.ToString(Constantes.FORMATO_FECHA);
             }
             else
             {
@@ -443,11 +423,10 @@
             EsRangoFecha = false;
             FiltroAplicar = CampoFiltrar + strToAdd;
             filtrosList.Add($"{FiltroAplicar}");
-            var propiedadFiltrar = BorrarTodosLosCaracteresDespuesDe(',', FiltroAplicar);
+            var propiedadFiltrar = FiltroAplicar.BorrarTodosLosCaracteresDespuesDe(',');
             indicePropiedadFiltrar = modFiltroList.Select(x => x.NombrePropiedad).IndexOf(propiedadFiltrar); 
             modFiltroList[indicePropiedadFiltrar].EstaVisible=false;
-            CampoFiltrar = string.Empty;
-            modFiltroList[indicePropiedadFiltrar].Condicion = ExtraerCadenaEntreDosComas(FiltroAplicar).Trim();
+            modFiltroList[indicePropiedadFiltrar].Condicion = FiltroAplicar.ExtraerCadenaEntreDosComas();
             TraerElementosFiltrados(indicePropiedadFiltrar, strToAdd);
         }
     }
@@ -457,118 +436,19 @@
         if (index >= 0)
         {
             modFiltroList[index].ValorBusqueda = valorActualizar;
-            FilterElements = AplicarFiltrar(Elements.ToList(), modFiltroList);
-            dateToFilter = null;
-            rangoFecha = null;
-            buscarString = string.Empty;
+            FilterElements = Elements.ToList().AplicarFiltrar(modFiltroList);
+            AnularElementos();
         }
         StateHasChanged();
     }
 
-    private string BorrarTodosLosCaracteresDespuesDe(char caracter, string cadena)
+    void AnularElementos()
     {
-        string cadenaDevolver = string.Empty;
-        int index = cadena.IndexOf(caracter);
-        if (index >= 0)
-        {
-            cadenaDevolver=cadena.Substring(0, index).Trim();
-        }
-        return cadenaDevolver;
+        CampoFiltrar = string.Empty;
+        dateToFilter = null;
+        rangoFecha = null;
+        buscarString = string.Empty;
     }
 
-    private string ExtraerCadenaEntreDosComas(string cadena)
-    {
-        int sFrom = cadena.IndexOf(",") + 1;
-        int sTo = cadena.LastIndexOf(",");
-        return cadena.Substring(sFrom, sTo-sFrom);
-    }
-
-    private  List<AuditLog> AplicarFiltrar(List<AuditLog> elementos, List<ModeloFiltro> modFiltroList)
-    {
-        List<AuditLog> listaElementosfiltrados = new List<AuditLog>(elementos);
-        foreach(var modFil in modFiltroList)
-        {
-            if (!string.IsNullOrEmpty(modFil.ValorBusqueda.Trim()))
-            {
-                switch (modFil.Condicion)
-                {
-                    case "Contiene":
-                        {
-                            listaElementosfiltrados = listaElementosfiltrados
-                            .Where(e => e.GetType().GetProperty(modFil.PropiedadLog).GetValue(e).ToString().ToLower()
-                            .Contains(modFil.ValorBusqueda.ToLower(), StringComparison.Ordinal)).ToList();
-                            break;
-                        }
-                    case "Es Igual":
-                        {
-                            listaElementosfiltrados = listaElementosfiltrados
-                            .Where(e => e.GetType().GetProperty(modFil.PropiedadLog).GetValue(e).ToString().ToLower()==(modFil.ValorBusqueda.ToLower()))
-                            .ToList();
-                            break;
-                        }
-                    case "No Es Igual":
-                        {
-                            listaElementosfiltrados = listaElementosfiltrados
-                            .Where(e => e.GetType().GetProperty(modFil.PropiedadLog).GetValue(e).ToString().ToLower()!=(modFil.ValorBusqueda.ToLower()))
-                            .ToList();
-                            break;
-                        }
-                    case "Comienza Con":
-                        {
-                            listaElementosfiltrados = listaElementosfiltrados
-                            .Where(x => x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString().ToLower().StartsWith(modFil.ValorBusqueda.ToLower()))
-                            .ToList();
-                            break;
-                        }
-                    case "Termina Con":
-                        {
-                            listaElementosfiltrados = listaElementosfiltrados
-                            .Where(x => x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString().ToLower().EndsWith(modFil.ValorBusqueda.ToLower()))
-                            .ToList();
-                            break;
-                        }
-                    case "Igual":
-                        {
-                            
-                            var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
-                            listaElementosfiltrados= listaElementosfiltrados
-                              .Where(x => DateTime.Equals(Convert.ToDateTime(x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString()).Date,fechaAComparar))
-                              .ToList();
-                              break;
-                          }
-                    case "Mayor Que":
-                          {
-                              var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
-                              listaElementosfiltrados = listaElementosfiltrados
-                              .Where(x => DateTime.Compare(DateTime.Parse(x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString()), fechaAComparar) > 0)
-                              .ToList();
-                              break;
-                          }
-                    case "Menor Que":
-                          {
-                               var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
-                              listaElementosfiltrados = listaElementosfiltrados
-                              .Where(x => DateTime.Compare((DateTime)x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x), fechaAComparar)< 0)
-                              .ToList();
-                              break;
-                          }
-                    case "Rango":
-                          {
-                              var dates = modFil.ValorBusqueda.Split(new string[] { " -> " }, StringSplitOptions.RemoveEmptyEntries);
-                               var startDate = DateTime.ParseExact(dates[0], FORMATO_FECHA,CultureInfo.InvariantCulture);
-                               var endDate = DateTime.ParseExact(dates[1],FORMATO_FECHA ,CultureInfo.InvariantCulture);
-                              listaElementosfiltrados = listaElementosfiltrados
-                              .Where(x => DateTime.Compare(DateTime.Parse(x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString()), endDate) <= 0 
-                              && DateTime.Compare((DateTime)x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x), startDate) >= 0 )
-                              .ToList();
-                              break;
-                          }
-                      default:
-                          break;
-
-                  }
-              }
-          }
-          return listaElementosfiltrados;
-      }
+    
 }
