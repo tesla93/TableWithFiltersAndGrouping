@@ -1,0 +1,112 @@
+﻿@inherits LayoutComponentBase
+@inject IAuthenticationService AuthenticationService
+@inject ILocalStorageService localStorageService
+@using FBS_ComponentesDinamicos.Entidades.Autenticacion
+@using FBS_ComponentesDinamicos.Sevices
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components
+@using AntDesign
+@using Radzen.Blazor
+@using Sotsera.Blazor.Toaster
+
+@*<RadzenDialog />*@
+<RadzenNotification />
+<ToastContainer />
+@if (AuthenticationService.usuarioLogin != null)
+{
+    <RadzenHeader>
+        <ChildContent>
+            <div class="d-flex justify-content-between" style="height: 70px; box-shadow: rgba(0,0,0,.07) 0px 2px 14px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <img src="img/LOGO-COOPASPIRE.png" class="logo">
+                        @*<h5 class="financial-text">ASPIRE</h5>
+                        <RadzenSidebarToggle Click="@SidebarToggle0Click">
+                        </RadzenSidebarToggle>*@
+                    
+                    @*<NavLink href="logout" class="nav-item nav-link logout">Cerrar Sesión</NavLink>*@
+                    <p class="nav-item nav-link logout">
+                        <MatButton Label="@AuthenticationService.usuarioLogin?.Codigo" OnClick="@OnClick" RefBack="@buttonForwardRef"></MatButton>
+                        <MatMenu @ref="Menu" TargetForwardRef="@buttonForwardRef">
+                            <MatList>
+                                <MatListItem Href="logout">Cerrar Sesión</MatListItem>
+                            </MatList>
+                        </MatMenu>
+                    </p>
+                </div>
+            </div>
+        </ChildContent>
+    </RadzenHeader>
+
+    <RadzenBody @ref="body0">
+        <ChildContent>
+            <RadzenContentContainer Name="main">
+                @Body
+            </RadzenContentContainer>
+        </ChildContent>
+    </RadzenBody>
+
+    <RadzenSidebar @ref="sidebar0">
+        <ChildContent>
+            <NavMenu />
+        </ChildContent>
+    </RadzenSidebar>
+
+    @*<RadzenFooter>
+        <ChildContent>
+            <RadzenLabel Text="@TextoFooter">
+            </RadzenLabel>
+        </ChildContent>
+    </RadzenFooter>*@
+
+}
+else
+{
+    <div class="container2">
+        @Body
+    </div>
+}
+
+@code{
+    [Inject]
+    protected NavigationManager UriHelper { get; set; }
+
+    //[Inject]
+    //protected Radzen.IDialogService DialogService { get; set; }
+
+    [Inject]
+    protected Radzen.NotificationService NotificationService { get; set; }
+
+    public UsuarioLogin usuarioLogin { get; set; } = null;
+    public bool Flag { get; set; } = false;
+    public string TextoFooter { get; set; }
+
+    protected RadzenBody body0;
+
+    protected RadzenSidebar sidebar0;
+
+    protected override void OnInitialized()
+    {
+        TextoFooter = $"Sifizsoft SA, Copyright Ⓒ {DateTime.Now.Year}";
+
+    }
+
+    protected async System.Threading.Tasks.Task SidebarToggle0Click(dynamic args)
+    {
+        await InvokeAsync(() => { sidebar0.Toggle(); });
+
+        await InvokeAsync(() => { body0.Toggle(); });
+    }
+
+    MatBlazor.ForwardRef buttonForwardRef = new MatBlazor.ForwardRef();
+    BaseMatMenu Menu;
+
+    public void OnClick(MouseEventArgs e)
+    {
+        this.Menu.OpenAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuarioLogin = await localStorageService.GetItem<UsuarioLogin>("usuario");
+    }
+}

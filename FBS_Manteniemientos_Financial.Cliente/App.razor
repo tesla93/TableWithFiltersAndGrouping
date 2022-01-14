@@ -1,0 +1,23 @@
+@using AntDesign
+@inject NavigationManager NavigationManager
+
+<CascadingBlazoredModal>
+    <Router AppAssembly="@typeof(Program).Assembly">
+        <Found Context="routeData">
+            <CascadingAuthenticationState>
+                <AppRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            </CascadingAuthenticationState>
+            @*<RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />*@
+        </Found>
+        <NotFound>
+            @{
+                // redirect to home page if not found
+                NavigationManager.NavigateTo("");
+            }
+        </NotFound>
+    </Router>
+</CascadingBlazoredModal>
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />

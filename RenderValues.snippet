@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>RenderRequiredStringLenght</Title>
+			<Shortcut>rrs</Shortcut>
+        </Header>
+        <Snippet>
+            <Code Language="CSharp">
+                <![CDATA[
+				[RenderValues(Orden = $Orden$, NombreAMostrar = "$NombreAMostrar$", EsMostrableEnLista = false)][Required(ErrorMessage = "El campo $NombreAMostrar$ es requerido")] [StringLength($CantidadCaracteres$, ErrorMessage = "El campo Codigo debe tener maximo $CantidadCaracteres$ caracteres")] ]]>
+            </Code>
+			<Declarations>
+				<Literal>
+					<ID>Orden</ID>
+					<ToolTip>Orden</ToolTip>					
+					<Default>0</Default>
+				</Literal>
+				<Literal>
+					<ID>NombreAMostrar</ID>
+					<ToolTip>NombreAMostrar</ToolTip>					
+					<Default>Codigo</Default>
+				</Literal>
+				<Literal>
+					<ID>CantidadCaracteres</ID>
+					<ToolTip>CantidadCaracteres</ToolTip>					
+					<Default>100</Default>
+				</Literal>				
+			</Declarations>
+        </Snippet>
+    </CodeSnippet>
+</CodeSnippets>

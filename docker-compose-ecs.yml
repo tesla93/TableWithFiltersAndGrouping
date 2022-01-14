@@ -1,0 +1,11 @@
+version: '3.4'
+
+services:
+    nomina:
+        build:
+            context: 'FBS_Mantenimientos_Financial.Api'
+            dockerfile: 'Dockerfile-alpine'
+        image: '119797188488.dkr.ecr.us-east-1.amazonaws.com/fbs.aspire.nomina.mantenimientos:${TAG}'
+        container_name: 'fbs.aspire.nomina.mantenimientos'
+        ports:
+            - "5745:5745"

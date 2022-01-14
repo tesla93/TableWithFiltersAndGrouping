@@ -1,0 +1,82 @@
+﻿@page "/login"
+@using System.ComponentModel.DataAnnotations
+@inject IAuthenticationService _authenticationService
+@inject NavigationManager _navigationManager
+@inject Sotsera.Blazor.Toaster.IToaster _toaster
+
+<img src="img/LOGO-COOPASPIRE.png" class="logo-login">
+<div class="card-login">
+    <h1 class="mt-5 d-flex justify-content-center">FINANCIAL</h1>
+    <h5 class="d-flex align-items-center justify-content-center font-weight-light sub-header" style="color:rgba(0,0,0,0.5)">Inserte los datos requeridos para entrar al sistema</h5>
+    <div class="card-body mt-4">
+        <EditForm Model="@usermodel" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="form-group-login">
+
+                <MatTextField @bind-Value="@usermodel.NombreUsuario" Style="text-transform:uppercase " Dense="true" Label="Código" Outlined="true"></MatTextField>
+
+                <ValidationMessage For="@(() => usermodel.NombreUsuario)" />
+            </div>
+            <div class="form-group-login">
+
+                <MatTextField @bind-Value="@usermodel.Contrasenia" Dense="true" Style="text-transform:uppercase" Label="Clave" Outlined="true" Type="password"></MatTextField>
+                <ValidationMessage For="@(() => usermodel.Contrasenia)" />
+            </div>
+            <div class="d-flex mt-5 justify-content-center align-items-end">
+                <button class="btn btn-blue">
+                    @if (loading)
+                    {
+                        <span class="spinner-border spinner-border-sm mr-2"></span>
+                    }
+                    ENTRAR
+                </button>
+            </div>
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger mt-3 mb-0">@error</div>
+            }
+         
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private Model usermodel = new Model();
+    private bool loading;
+    private string error = "";
+
+    protected override void OnInitialized()
+    {
+        if (_authenticationService.usuarioLogin != null)
+        {
+            _navigationManager.NavigateTo("");
+        }
+    }
+
+    private async void HandleValidSubmit()
+    {
+        loading = true;
+        try
+        {
+            await _authenticationService.Login(usermodel.NombreUsuario, usermodel.Contrasenia);
+            var returnUrl = _navigationManager.QueryString("returnUrl") ?? "";
+            _navigationManager.NavigateTo(returnUrl);
+        }
+        catch (Exception ex)
+        {
+            loading = false;
+            _toaster.Error(ex.Message);
+            StateHasChanged();
+        }
+    }
+
+    private class Model
+    {
+        [Required(ErrorMessage = "El campo Código es requerido")]
+        public string NombreUsuario { get; set; }
+
+        [Required(ErrorMessage = "El campo Contraseña es requerido")]
+        public string Contrasenia { get; set; }
+    }
+}

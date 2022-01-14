@@ -1,0 +1,22 @@
+﻿@using FBS_ComponentesDinamicos.Utiles
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+
+        <Router AppAssembly="@typeof(Program).Assembly">
+            <Found Context="routeData">
+                <CascadingAuthenticationState>
+                    <AppRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                </CascadingAuthenticationState>
+                @*<RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />*@
+            </Found>
+            <NotFound>
+                @{
+                    // redirect to home page if not found
+                    NavigationManager.NavigateTo("");
+                }
+            </NotFound>
+        </Router>
+
+<MudThemeProvider/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>

@@ -1,0 +1,35 @@
+﻿{
+   "ContextClassName": "FBS_AspirevaciaContext",
+   "ContextNamespace": null,
+   "DefaultDacpacSchema": null,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "TRABAJANDO",
+   "ProjectRootNamespace": "FBS_Mantenimientos_Financial.Domain",
+   "SelectedHandlebarsLanguage": 0,
+   "SelectedToBeGenerated": 0,
+   "Tables": [
+      {
+         "HasPrimaryKey": true,
+         "Name": "[FBS_NOMINA].[EMPLEADO]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[FBS_NOMINA].[EMPLEADOESTADOCAPACITACION]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[FBS_NOMINA].[ESTADOCAPACITACION]"
+      }
+   ],
+   "UseDatabaseNames": false,
+   "UseDbContextSplitting": false,
+   "UseFluentApiOnly": false,
+   "UseHandleBars": false,
+   "UseInflector": false,
+   "UseLegacyPluralizer": false,
+   "UseNodaTime": false,
+   "UseSpatial": false,
+   "UseStoredProcedures": false
+}

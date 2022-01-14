@@ -1,0 +1,59 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "blazorwasm",
+            "name": "Cliente Launch",
+            "request": "launch"
+            //"browser": "chrome"
+        }
+    ],
+
+    "iisSettings": {
+        "windowsAuthentication": false,
+        "anonymousAuthentication": true,
+        "iisExpress": {
+         "applicationUrl": "https://localhost:4411",
+          "sslPort": 0
+        }
+      },
+
+      "profiles": {
+        "IIS Express": {
+          "commandName": "IISExpress",
+          "launchBrowser": true,
+          "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+          },
+          "applicationUrl": "https://localhost:44311",
+          "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
+        },
+        "FBS_Manteniemientos_Financial.Cliente": {
+          "commandName": "IISExpress",
+          "launchBrowser": true,
+          "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+          },
+          "nativeDebugging": true,
+          "use64Bit": true,
+          "applicationUrl": "https://localhost:44311",
+          "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
+        }
+    },
+
+    
+      // "Kestrel": {
+      //   "EndPoints": {
+      //     "Http": {
+      //       "Url": "http://localhost:4300"
+      //     }
+      //   }
+      // },
+      // "Logging": {
+      //   "LogLevel": {
+      //     "Default": "Warning"
+      //   }
+      // },
+      // "AllowedHosts": "*"
+    
+}

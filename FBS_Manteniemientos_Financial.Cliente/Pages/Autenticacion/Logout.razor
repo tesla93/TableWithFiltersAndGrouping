@@ -1,0 +1,18 @@
+﻿@page "/logout"
+@inject IAuthenticationService _autenticacionService
+
+@code {
+    protected override async void OnInitialized()
+    {
+        //GC.SuppressFinalize(this);
+        try
+        {
+            await _autenticacionService.Logout();
+        }
+        catch (Exception ex)
+        {
+
+            Console.WriteLine($"Exception message in logout {ex.Message}");
+        }
+    }
+}

@@ -1,0 +1,105 @@
+// {
+//     "iisSettings": {
+//       "windowsAuthentication": false,
+//       "anonymousAuthentication": true,
+//       "iisExpress": {
+//         "applicationUrl": "https://localhost:44311",
+//         "sslPort": 44311
+//       }
+//     },
+//     "profiles": {
+//       "IIS Express": {
+//         "commandName": "IISExpress",
+//         "launchBrowser": true,
+//         "environmentVariables": {
+//           "ASPNETCORE_ENVIRONMENT": "Development"
+//         },
+//         //"inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
+//       },
+//       "FBS_Manteniemientos_Financial.Cliente": {
+//         "commandName": "IISExpress",
+//         "launchBrowser": true,
+//         "environmentVariables": {
+//           "ASPNETCORE_ENVIRONMENT": "Development"
+//         },
+//         "nativeDebugging": true,
+//         "use64Bit": true,
+//         "applicationUrl": "https://localhost:51004;http://localhost:51003",
+//         //"inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
+//       }
+//     }
+//   }
+
+// {
+//     // Use IntelliSense to learn about possible attributes.
+//     // Hover to view descriptions of existing attributes.
+//     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": ".NET Core Launch (Blazor Standalone)",
+//             "type": "coreclr",
+//             "request": "launch",
+//             "program": "dotnet",
+//             "args": [
+//                 "run"
+//             ],
+//             "cwd": "${workspaceFolder}/FBS_Manteniemientos_Financial.Cliente/bin/Debug/netstandard2.1",
+//             "env": {
+//                 "ASPNETCORE_ENVIRONMENT": "Development"
+//             }
+//         },
+//         {
+//             "name": ".NET Core Debug Blazor Web Assembly in Chrome",
+//             "type": "pwa-chrome",
+//             "request": "launch",
+//             "timeout": 30000,
+//             "url": "https://localhost:5009",
+//             "webRoot": "${workspaceFolder}/FBS_Manteniemientos_Financial.Cliente/wwwroot",
+//             "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
+//         }
+//     ]
+// }
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "blazorwasm",
+            "name": "Launch and Debug Blazor WebAssembly App",
+            "request": "launch",
+            "browser": "chrome"
+        }
+    ],
+
+    "iisSettings": {
+        "windowsAuthentication": false,
+        "anonymousAuthentication": true,
+        "iisExpress": {
+          "applicationUrl": "https://localhost:44311",
+          "sslPort": 44311
+        }
+      },
+
+      "profiles": {
+        "IIS Express": {
+          "commandName": "IISExpress",
+          "launchBrowser": true,
+          "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+          },
+          "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
+        },
+        "FBS_Manteniemientos_Financial.Cliente": {
+          "commandName": "IISExpress",
+          "launchBrowser": true,
+          "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+          },
+          "nativeDebugging": true,
+          "use64Bit": true,
+          "applicationUrl": "https://localhost:44311;http://localhost:44310",
+          "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}"
+        }
+    }
+}
