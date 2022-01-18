@@ -11,7 +11,7 @@
     <MudChipSet AllClosable="true" Class="col-auto mt-3"  OnClose="CerrarAgrupar">
         @foreach (var value in agrupacionesList)
         {
-            <MudChip Color="Color.Tertiary" Text="@value"></MudChip>
+            <MudChip Color="Color.Primary" Text="@value"></MudChip>
         }
     </MudChipSet>
     
@@ -29,7 +29,7 @@
     {
         <div class="mr-auto mt-3 col-2" style="margin-left:-16px;">
 
-            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" aria-label="add" Color="Color.Tertiary" OnClick="Agrupar">Agrupar</MudButton>
+            <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" aria-label="add" Color="Color.Primary" OnClick="Agrupar">Agrupar</MudButton>
         </div>
     }
    </MudItem>
@@ -41,7 +41,7 @@
     <MudChipSet AllClosable="true" Class="col-auto " OnClose="CerrarFiltrar">
         @foreach (var filter in filtrosList)
         {
-            <MudChip Color="Color.Primary" Class="@filter" Text="@filter.Replace(",", "")"></MudChip>
+            <MudChip Color="Color.Tertiary" Class="@filter" Text="@filter.Replace(",", "")"></MudChip>
         }
     </MudChipSet>
 
@@ -50,7 +50,7 @@
         {
           <MudMenu FullWidth="true" MaxHeight="200" Style="width:150px;" Dense="true">
             <ActivatorContent>
-                <MudButton Variant="Variant.Text" Class="mb-1" StartIcon="@Icons.Material.Filled.FilterList" aria-label="add" Color="Color.Primary">Filtrar</MudButton>
+                <MudButton Variant="Variant.Text" Class="mb-1" StartIcon="@Icons.Material.Filled.FilterList" aria-label="add" Color="Color.Tertiary">Filtrar</MudButton>
             </ActivatorContent>
             <ChildContent>
                 @foreach (var campoModelo in modFiltroList.Where(x => x.EstaVisible).Select(x=>x.NombrePropiedad))
@@ -79,13 +79,13 @@
                             @if (EsRangoFecha)
                             {
                                 <div style="width:240px;">
-                                    <MudDateRangePicker Label="Seleccione Rango de Fecha" DateFormat="@Constantes.FORMATO_FECHA" Elevation="12" DateRangeChanged="RangoFechaCambiada" />
+                                    <MudDateRangePicker Label="Seleccione Rango de Fecha" Color="Color.Tertiary" DateFormat="@Constantes.FORMATO_FECHA" Elevation="12" DateRangeChanged="RangoFechaCambiada" />
                                 </div>
                             }
                             else
                             {
                                 <div style="width: 173px;">
-                                <MudDatePicker DateChanged="FechaCambiada" DisableToolbar="true" Elevation="12" DateFormat="@Constantes.FORMATO_FECHA" Placeholder="Seleccione Fecha" />
+                                <MudDatePicker DateChanged="FechaCambiada" DisableToolbar="true" Color="Color.Tertiary" Elevation="12" DateFormat="@Constantes.FORMATO_FECHA" Placeholder="Seleccione Fecha" />
                                 </div >
                             }
                         </div >
@@ -104,7 +104,7 @@
     </MudItem>
 </div>
 
-<MudTable Hover="true" Breakpoint="Breakpoint.Sm" Height="auto" FixedHeader="true"
+<MudTable Hover="true" Striped="true" Breakpoint="Breakpoint.Sm" Height="auto" FixedHeader="true"
           Items="@FilterElements"
           Class="mt-3"
           GroupBy="@(agrupacionesList.Any() ?_groupDefinition : null)"
@@ -217,7 +217,7 @@
         FilterElements = new List<AuditLog>(Elements);
         camposModeloAgruparList = new List<string>()
             {
-                "Id","Accion","Nombre de Tabla","Viejos Valores","Nuevos Valores","Fecha Máquina","Fecha Sistema","Nombre Usuario","Id Oficina"
+                "Id","Accion","Nombre de Tabla","Viejos Valores","Nuevos Valores","Nombre Usuario","Id Oficina"
             };
     }
 

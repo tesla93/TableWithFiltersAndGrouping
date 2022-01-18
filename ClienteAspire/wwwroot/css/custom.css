@@ -599,4 +599,11 @@ body:not(.rz-default-scrollbars) ::-webkit-scrollbar-thumb {
         width: 134% !important;
     }
 
+th {
+    background-color: var(--aspire-secondary-color) !important;
+    color:#fff !important;
+}
 
+.mud-table-sort-label:hover {
+    color: blanchedalmond !important;
+}
