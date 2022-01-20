@@ -599,11 +599,33 @@ body:not(.rz-default-scrollbars) ::-webkit-scrollbar-thumb {
         width: 134% !important;
     }
 
-th {
+thead th {
     background-color: var(--aspire-secondary-color) !important;
-    color:#fff !important;
+    color: #fff !important;
 }
 
 .mud-table-sort-label:hover {
     color: blanchedalmond !important;
+}
+
+.mud-theme-tertiary {
+    color: var(--mud-palette-tertiary-text) !important;
+    background-color: var(--aspire-primary-color) !important;
+}
+
+.mud-button-outlined.mud-button-outlined-tertiary {
+    color: var(--aspire-primary-color) !important;
+    border: 1px solid var(--aspire-primary-color) !important;
+}
+
+.mud-range-selection-tertiary:hover {
+    background-color: var(--aspire-primary-color) !important;
+}
+
+.mud-tertiary-text {
+    color: var(--aspire-primary-color) !important;
+}
+
+.text-primary {
+color: var(--aspire-secondary-color) !important;
 }

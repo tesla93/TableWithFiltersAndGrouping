@@ -8,14 +8,17 @@ namespace ClienteAspire.Modelos
 {
     public class AuditLog
     {
-        public int Id { get; set; }
-        public string Action { get; set; }
-        public string TableName { get; set; }
-        public string OldValues { get; set; }
-        public string NewValues { get; set; }
-        public DateTime MachineDate { get; set; }
-        public DateTime SystemDate { get; set; }
-        public string UserName { get; set; }
-        public string OfficeId { get; set; }
+        public string Accion { get; set; }
+        public string NombreTabla { get; set; }
+        public string ValorAnterior { get; set; }
+        public string ValorNuevo { get; set; }
+        public DateTime FechaMaquina { get; set; }
+        public DateTime FechaSistema { get; set; }
+        public string InterfazCliente { get; set; }
+        public string CodigoUsuario { get; set; }
+        public string NombreOficina { get; set; }
+        public bool RegistroValido { get; set; }
+
+
     }
 }
