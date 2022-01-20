@@ -37,12 +37,6 @@ builder.Services.AddScoped<IValidadorLlavePrimariaService, ValidadorLlavePrimari
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 
 
-
-
-
-
-//builder.Services.DependencyInjectionConfiguration();
-
 var httpClient = builder.Build().Services.GetRequiredService<HttpClient>();
 var navigationManager = builder.Build().Services.GetRequiredService<NavigationManager>();
 var authenticationStateProvider = builder.Build().Services.GetRequiredService<AuthenticationStateProvider>();

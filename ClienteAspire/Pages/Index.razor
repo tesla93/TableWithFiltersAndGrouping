@@ -1,9 +1,15 @@
 ﻿@page "/"
 @using ClienteAspire.Modelos
+@using FBS_ComponentesDinamicos.Entidades.Autenticacion
+@using FBS_ComponentesDinamicos.Sevices
 @using Microsoft.AspNetCore.Authorization
 @using System.Globalization
+@using System.Net.Http.Headers
+@using Newtonsoft.Json
 @inject HttpClient _httpclient
+@inject IHttpService _httpService
 @attribute [Authorize]
+@inject ILocalStorageService _localStorageService
 
 
 @*Agrupar*@
@@ -150,6 +156,9 @@
     <GroupFooterTemplate>
         <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" colspan="9">Total: @context.Items.Count()</MudTh>
     </GroupFooterTemplate>
+    <PagerContent>
+        <MudPagination Color="Color.Primary" Count="4" />
+    </PagerContent>
 </MudTable>
 
 
@@ -185,26 +194,28 @@
 
     }
 
-    public void InicializarElementos()
+    public async Task InicializarElementos()
     {
-        Elements = new List<AuditLog>
-         {
-             new AuditLog()
-             {
-                 Accion="Abrir", NombreTabla="Nomina", ValorAnterior="A", ValorNuevo="B", FechaMaquina=new DateTime(2021, 6, 4),
-                 FechaSistema=new DateTime(2022, 1, 4), InterfazCliente="interf1", CodigoUsuario="Admin", NombreOficina="Matriz", RegistroValido=false
-             },
-              new AuditLog()
-             {
-                 Accion="Cerrar", NombreTabla="Componente", ValorAnterior="C", ValorNuevo="D", FechaMaquina=new DateTime(2021, 10, 4),
-                 FechaSistema=new DateTime(2021, 9, 4), InterfazCliente="interf2", CodigoUsuario="Carrillo", NombreOficina="Matriz", RegistroValido=false
-             },
-              new AuditLog()
-             {
-                 Accion="permanece", NombreTabla="Componente", ValorAnterior="F", ValorNuevo="G", FechaMaquina=new DateTime(2021, 8, 4),
-                 FechaSistema=new DateTime(2021, 9, 4), InterfazCliente="interf3", CodigoUsuario="Admin", NombreOficina="Checa", RegistroValido=true
-             }
-         };
+        var consRequest = new ConsultaAuditoriaOperacionRequest(){Cantidad=10, Omitir=0, Filtro=""};
+        try
+        {
+            using (var client = new HttpClient())
+            {
+                var response = await client.PostAsJsonAsync("https://localhost:5001/api/logs", consRequest);
+                Elements = await response.Content.ReadFromJsonAsync<List<AuditLog>>();
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+        var listado = await _httpService.Post<ConsultaAuditoriaOperacionRequest, object>(Constantes.URI, consRequest);
+        if (!listado.Exitoso)
+            throw new Exception();
+
+        //Elements = listado.Response;
+
         modFiltroList = new List<ModeloFiltro>()
             {
                 new ModeloFiltro(){PropiedadLog = nameof(AuditLog.Accion), NombrePropiedad="Accion", Condicion = string.Empty, ValorBusqueda = string.Empty, EstaVisible=true },
@@ -258,7 +269,7 @@
         }
         switch (valorSeleccionado)
         {
-            
+
             case "Acciones":
                 {
                     return new TableGroupDefinition<AuditLog>()
@@ -337,7 +348,7 @@
                         };
                     break;
                 }
-             case "Registro Válido":
+            case "Registro Válido":
                 {
                     return new TableGroupDefinition<AuditLog>()
                         {
@@ -442,7 +453,7 @@
         if (index >= 0)
         {
             modFiltroList[index].ValorBusqueda = valorActualizar;
-            FilterElements = Elements.ToList().AplicarFiltrar(modFiltroList);
+            FilterElements = Elements.ToList().AplicarFiltrar(modFiltroList, _httpService);
             AnularElementos();
         }
         StateHasChanged();
@@ -454,6 +465,12 @@
         dateToFilter = null;
         rangoFecha = null;
         buscarString = string.Empty;
+    }
+
+    public async Task AgregarJWTHeader()
+    {
+        UsuarioLogin usuarioLogin = await _localStorageService.GetItem<UsuarioLogin>("usuario") ?? null;
+        _httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", usuarioLogin.Token);
     }
 
     

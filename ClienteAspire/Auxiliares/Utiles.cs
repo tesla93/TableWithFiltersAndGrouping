@@ -1,4 +1,5 @@
 ﻿using ClienteAspire.Modelos;
+using FBS_ComponentesDinamicos.Sevices;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -30,10 +31,11 @@ namespace ClienteAspire.Auxiliares
             return cadena.Substring(sFrom, sTo - sFrom).Trim();
         }
 
-        public static List<AuditLog> AplicarFiltrar(this List<AuditLog> elementos, List<ModeloFiltro> modFiltroList)
+        public static List<AuditLog> AplicarFiltrar(this List<AuditLog> elementos, List<ModeloFiltro> modFiltroList, IHttpService _httpService)
         {
             string Filtros = string.Empty;
-            
+            var consRequest = new ConsultaAuditoriaOperacionRequest();
+
             List<AuditLog> listaElementosfiltrados = new List<AuditLog>(elementos);
             foreach (var modFil in modFiltroList)
             {
@@ -145,7 +147,8 @@ namespace ClienteAspire.Auxiliares
                         Filtros += $" and {filtroAgregar}";
                 }
 
-                //http
+                consRequest.Filtro = Filtros;
+                var elementosFiltrados = _httpService.Post<ConsultaAuditoriaOperacionRequest, List<AuditLog>>("/Logs/ConsultaAuditoriaOperacion/ConsultaOperaciones", consRequest);
             }
             return listaElementosfiltrados;
         }
