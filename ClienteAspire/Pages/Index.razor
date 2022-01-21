@@ -156,9 +156,7 @@
     <GroupFooterTemplate>
         <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" colspan="9">Total: @context.Items.Count()</MudTh>
     </GroupFooterTemplate>
-    <PagerContent>
-        <MudPagination Color="Color.Primary" Count="4" />
-    </PagerContent>
+   
 </MudTable>
 
 
@@ -197,24 +195,24 @@
     public async Task InicializarElementos()
     {
         var consRequest = new ConsultaAuditoriaOperacionRequest(){Cantidad=10, Omitir=0, Filtro=""};
-        try
-        {
-            using (var client = new HttpClient())
-            {
-                var response = await client.PostAsJsonAsync("https://localhost:5001/api/logs", consRequest);
-                Elements = await response.Content.ReadFromJsonAsync<List<AuditLog>>();
-            }
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-
-        var listado = await _httpService.Post<ConsultaAuditoriaOperacionRequest, object>(Constantes.URI, consRequest);
-        if (!listado.Exitoso)
-            throw new Exception();
-
-        //Elements = listado.Response;
+        Elements = new List<AuditLog>
+         {
+             new AuditLog()
+             {
+                 Accion="Abrir", NombreTabla="Nomina", ValorAnterior="A", ValorNuevo="B", FechaMaquina=new DateTime(2021, 6, 4),
+                 FechaSistema=new DateTime(2022, 1, 4), InterfazCliente="interf1", CodigoUsuario="Admin", NombreOficina="Matriz", RegistroValido=false
+             },
+              new AuditLog()
+             {
+                 Accion="Cerrar", NombreTabla="Componente", ValorAnterior="C", ValorNuevo="D", FechaMaquina=new DateTime(2021, 10, 4),
+                 FechaSistema=new DateTime(2021, 9, 4), InterfazCliente="interf2", CodigoUsuario="Carrillo", NombreOficina="Matriz", RegistroValido=false
+             },
+              new AuditLog()
+             {
+                 Accion="permanece", NombreTabla="Componente", ValorAnterior="F", ValorNuevo="G", FechaMaquina=new DateTime(2021, 8, 4),
+                 FechaSistema=new DateTime(2021, 9, 4), InterfazCliente="interf3", CodigoUsuario="Admin", NombreOficina="Checa", RegistroValido=true
+             }
+         };
 
         modFiltroList = new List<ModeloFiltro>()
             {
@@ -233,7 +231,7 @@
         FilterElements = new List<AuditLog>(Elements);
         camposModeloAgruparList = new List<string>()
             {
-                "Accion","Nombre de Tabla","Valor Anterior","Valor Nuevo", "Interfaz Cliente", "Nombre Usuario","Nombre Oficina", "Registro Válido"
+                "Accion","Nombre de Tabla","Valor Anterior","Valor Nuevo", "Interfaz Cliente", "Codigo Usuario","Nombre Oficina", "Registro Válido"
             };
     }
 
@@ -270,11 +268,11 @@
         switch (valorSeleccionado)
         {
 
-            case "Acciones":
+            case "Accion":
                 {
                     return new TableGroupDefinition<AuditLog>()
                         {
-                            GroupName = "Acciones",
+                            GroupName = "Accion",
                             Indentation = true,
                             Expandable = true,
                             IsInitiallyExpanded = false,
@@ -296,11 +294,11 @@
                         };
                     break;
                 }
-            case "Viejos Valores":
+            case "Valor Anterior":
                 {
                     return new TableGroupDefinition<AuditLog>()
                         {
-                            GroupName = "Viejos Valores",
+                            GroupName = "Valor Anterior",
                             Indentation = true,
                             Expandable = true,
                             IsInitiallyExpanded = false,
@@ -309,11 +307,11 @@
                         };
                     break;
                 }
-            case "Nuevos Valores":
+            case "Valor Nuevo":
                 {
                     return new TableGroupDefinition<AuditLog>()
                         {
-                            GroupName = "Nuevos Valores",
+                            GroupName = "Valor Nuevo",
                             Indentation = true,
                             Expandable = true,
                             IsInitiallyExpanded = false,
@@ -357,6 +355,19 @@
                             Expandable = true,
                             IsInitiallyExpanded = false,
                             Selector = new Func<AuditLog, object>(x => x.RegistroValido),
+                            InnerGroup = ObtenerGrupos(valoresSeleccionado.Skip(1).ToList())
+                        };
+                    break;
+                }
+             case "Interfaz Cliente":
+                {
+                    return new TableGroupDefinition<AuditLog>()
+                        {
+                            GroupName = "Interfaz Cliente",
+                            Indentation = true,
+                            Expandable = true,
+                            IsInitiallyExpanded = false,
+                            Selector = new Func<AuditLog, object>(x => x.InterfazCliente),
                             InnerGroup = ObtenerGrupos(valoresSeleccionado.Skip(1).ToList())
                         };
                     break;
