@@ -1,13 +1,6 @@
 ﻿using ClienteAspire.Modelos;
 using FBS_ComponentesDinamicos.Sevices;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClienteAspire.Auxiliares
 {
@@ -31,12 +24,10 @@ namespace ClienteAspire.Auxiliares
             return cadena.Substring(sFrom, sTo - sFrom).Trim();
         }
 
-        public static List<AuditLog> AplicarFiltrar(this List<AuditLog> elementos, List<ModeloFiltro> modFiltroList, IHttpService _httpService)
+        public static string AplicarFiltrar(this List<ModeloFiltro> modFiltroList)
         {
             string Filtros = string.Empty;
-            var consRequest = new ConsultaAuditoriaOperacionRequest();
-
-            List<AuditLog> listaElementosfiltrados = new List<AuditLog>(elementos);
+            
             foreach (var modFil in modFiltroList)
             {
                 string filtroAgregar = string.Empty;
@@ -46,46 +37,29 @@ namespace ClienteAspire.Auxiliares
                     {
                         case "Contiene":
                             {
-                                filtroAgregar = $"e => e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString().ToLower().Contains(\"{modFil.ValorBusqueda.ToLower()}\")";                              
-                               
-                                listaElementosfiltrados = listaElementosfiltrados
-                                .Where(e => e.GetType().GetProperty(modFil.PropiedadLog).GetValue(e).ToString().ToLower()
-                                .Contains(modFil.ValorBusqueda.ToLower(), StringComparison.Ordinal)).ToList();
+                                filtroAgregar = $"e.{modFil.PropiedadLog}.ToLower().Contains(\"{modFil.ValorBusqueda.ToLower()}\")";                              
                                 break;
                             }
                         case "Es Igual":
                             {
-                                filtroAgregar = $"e => e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString().ToLower() == (\"{modFil.ValorBusqueda.ToLower()}\")";
-
-                                listaElementosfiltrados = listaElementosfiltrados
-                                .Where(e => e.GetType().GetProperty(modFil.PropiedadLog).GetValue(e).ToString().ToLower() == (modFil.ValorBusqueda.ToLower()))
-                                .ToList();
+                                filtroAgregar = $"e.{modFil.PropiedadLog}.ToLower() == (\"{modFil.ValorBusqueda.ToLower()}\")";
                                 break;
                             }
                         case "No Es Igual":
                             {
-                                filtroAgregar = $"e => e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString().ToLower() != (\"{modFil.ValorBusqueda.ToLower()}\")";
-                                listaElementosfiltrados = listaElementosfiltrados
-                                .Where(e => e.GetType().GetProperty(modFil.PropiedadLog).GetValue(e).ToString().ToLower() != (modFil.ValorBusqueda.ToLower()))
-                                .ToList();
+                                filtroAgregar = $"e.{modFil.PropiedadLog}.ToLower() != (\"{modFil.ValorBusqueda.ToLower()}\")";
+
                                 break;
                             }
                         case "Comienza Con":
                             {
-                                filtroAgregar = $"e => e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString().ToLower().StartsWith(\"{modFil.ValorBusqueda.ToLower()}\")";
+                                filtroAgregar = $"e.{modFil.PropiedadLog}.ToLower().StartsWith(\"{modFil.ValorBusqueda.ToLower()}\")";
 
-                                listaElementosfiltrados = listaElementosfiltrados
-                                .Where(x => x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString().ToLower().StartsWith(modFil.ValorBusqueda.ToLower()))
-                                .ToList();
                                 break;
                             }
                         case "Termina Con":
                             {
-                                filtroAgregar = $"e => e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString().ToLower().EndsWith({modFil.ValorBusqueda.ToLower()})";
-
-                                listaElementosfiltrados = listaElementosfiltrados
-                                .Where(x => x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString().ToLower().EndsWith(modFil.ValorBusqueda.ToLower()))
-                                .ToList();
+                                filtroAgregar = $"e.{modFil.PropiedadLog}.ToLower().EndsWith(\"{modFil.ValorBusqueda.ToLower()}\")";
                                 break;
                             }
                         case "Igual":
@@ -93,32 +67,20 @@ namespace ClienteAspire.Auxiliares
 
                                 var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
 
-                                filtroAgregar = $"e=>DateTime.Equals(Convert.ToDateTime(e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString()).Date, {fechaAComparar})";
-
-                                listaElementosfiltrados = listaElementosfiltrados
-                                  .Where(x => DateTime.Equals(Convert.ToDateTime(x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString()).Date, fechaAComparar))
-                                  .ToList();
+                                filtroAgregar = $"DateTime.Equals(Convert.ToDateTime(e.{modFil.PropiedadLog}.ToString()).Date, {fechaAComparar})";
                                 break;
                             }
                         case "Mayor Que":
                             {
                                 var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
-                                filtroAgregar = $"e => DateTime.Compare(DateTime.Parse(e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString()), {fechaAComparar}) > 0";
-
-                                listaElementosfiltrados = listaElementosfiltrados
-                                .Where(x => DateTime.Compare(DateTime.Parse(x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString()), fechaAComparar) > 0)
-                                .ToList();
+                                filtroAgregar = $"DateTime.Compare(DateTime.Parse(e.{modFil.PropiedadLog}.ToString()), {fechaAComparar}) > 0";
                                 break;
                             }
                         case "Menor Que":
                             {
                                 var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
 
-                                filtroAgregar = $"e => DateTime.Compare(DateTime.Parse(e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString()), {fechaAComparar}) < 0";
-
-                                listaElementosfiltrados = listaElementosfiltrados
-                                .Where(x => DateTime.Compare((DateTime)x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x), fechaAComparar) < 0)
-                                .ToList();
+                                filtroAgregar = $"DateTime.Compare(DateTime.Parse(e.{modFil.PropiedadLog}.ToString({Constantes.FORMATO_FECHA})), {fechaAComparar}) < 0";
                                 break;
                             }
                         case "Rango":
@@ -126,13 +88,8 @@ namespace ClienteAspire.Auxiliares
                                 var dates = modFil.ValorBusqueda.Split(new string[] { " -> " }, StringSplitOptions.RemoveEmptyEntries);
                                 var startDate = DateTime.ParseExact(dates[0], Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture);
                                 var endDate = DateTime.ParseExact(dates[1], Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture);
-                                filtroAgregar = $"e => DateTime.Compare(DateTime.Parse(e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e).ToString()), {endDate}) <= 0 " +
-                                    $"&& DateTime.Compare((DateTime)e.GetType().GetProperty(\"{modFil.PropiedadLog}\").GetValue(e), {startDate}) >= 0";
-
-                                listaElementosfiltrados = listaElementosfiltrados
-                                .Where(x => DateTime.Compare(DateTime.Parse(x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x).ToString()), endDate) <= 0
-                                && DateTime.Compare((DateTime)x.GetType().GetProperty(modFil.PropiedadLog).GetValue(x), startDate) >= 0)
-                                .ToList();
+                                filtroAgregar = $"DateTime.Compare(DateTime.Parse(e.{modFil.PropiedadLog}.ToString()), {endDate}) <= 0 " +
+                                    $"and DateTime.Compare(DateTime.Parse(e.{modFil.PropiedadLog}.ToString()), {startDate}) >= 0";
                                 break;
                             }
                         default:
@@ -142,15 +99,13 @@ namespace ClienteAspire.Auxiliares
 
                     
                     if (string.IsNullOrEmpty(Filtros))
-                        Filtros = filtroAgregar;
+                        Filtros = "e => "+ filtroAgregar;
                     else
                         Filtros += $" and {filtroAgregar}";
                 }
-
-                consRequest.Filtro = Filtros;
-                var elementosFiltrados = _httpService.Post<ConsultaAuditoriaOperacionRequest, List<AuditLog>>("/Logs/ConsultaAuditoriaOperacion/ConsultaOperaciones", consRequest);
+               
             }
-            return listaElementosfiltrados;
+            return Filtros;
         }
 
     }

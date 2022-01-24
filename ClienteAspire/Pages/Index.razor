@@ -10,6 +10,8 @@
 @inject IHttpService _httpService
 @attribute [Authorize]
 @inject ILocalStorageService _localStorageService
+@inject Sotsera.Blazor.Toaster.IToaster _toaster
+
 
 
 @*Agrupar*@
@@ -110,15 +112,19 @@
     </MudItem>
 </div>
 
-<MudTable Hover="true" Striped="true" Breakpoint="Breakpoint.Sm" Height="auto" FixedHeader="true"
-          Items="@FilterElements"
+<MudTable Hover="true" Loading="_loading" Striped="true" Breakpoint="Breakpoint.Sm"  Height="auto" FixedHeader="true"
+          Items="@Elements"
           Class="mt-3"
           GroupBy="@(agrupacionesList.Any() ?_groupDefinition : null)"
           GroupHeaderStyle="background-color:var(--mud-palette-background-grey)"
           GroupFooterClass="mb-4"
           Dense="true">
     <ColGroup>
-        <col style="width: 60px;" />
+        <col style="width: 10px;" />
+        <col style="width: 10px;"/>
+        <col style="width: 10px;"/>
+        <col style="width: 10px;"/>
+        <col />
         <col />
         <col />
         <col />
@@ -134,28 +140,36 @@
         <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.FechaSistema)">Fecha Sistema</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.InterfazCliente)">Interfaz Cliente</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.CodigoUsuario)">Código Usuario</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.NombreOficina)">Nombre Oficina</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.RegistroValido)">Registro Válido</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.NombreOficina)">Nombre Oficina</MudTableSortLabel></MudTh>
     </HeaderContent>
     <GroupHeaderTemplate>
-        <MudTh Class="mud-table-cell-custom-group" colspan="9">@($"{context.GroupName}: {context.Key}")</MudTh>
+        <MudTh Class="mud-table-cell-custom-group" colspan="10">@($"{context.GroupName}: {context.Key}")</MudTh>
     </GroupHeaderTemplate>
     <RowTemplate>
-        <MudTd DataLabel="Accion">@context.Accion</MudTd>
+        <MudTd  DataLabel="Accion">@context.Accion</MudTd>
         <MudTd DataLabel="Nombre de Tabla">@context.NombreTabla</MudTd>
-        <MudTd DataLabel="Valor Anterior">@context.ValorAnterior</MudTd>
-        <MudTd DataLabel="Valor Nuevo">@context.ValorNuevo</MudTd>
+        <MudTd Style="width:10px;" DataLabel="Valor Anterior">@context.ValorAnterior</MudTd>
+        <MudTd Style="width:10px;" DataLabel="Valor Nuevo">@context.ValorNuevo</MudTd>
         <MudTd DataLabel="Fecha Maquina'">@context.FechaMaquina.ToString(Constantes.FORMATO_FECHA)</MudTd>
         <MudTd DataLabel="Fecha Sistema">@context.FechaSistema.ToString(Constantes.FORMATO_FECHA)</MudTd>
         <MudTd DataLabel="Interfaz Cliente">@context.InterfazCliente</MudTd>
         <MudTd DataLabel="Código Usuario">@context.CodigoUsuario</MudTd>
-        <MudTd DataLabel="Nombre Oficina">@context.NombreOficina</MudTd>
         <MudTd DataLabel="Registro Válido">@context.RegistroValido</MudTd>
+        <MudTd DataLabel="Nombre Oficina">@context.NombreOficina</MudTd>
 
     </RowTemplate>
+    
+    <PagerContent >
+        <div class="d-flex flex-column align-end mt-3 pb-3">
+            <MudPagination  Color="Color.Primary" Count="4"  SelectedChanged="async (int numberOfPage)=> await ObtenerElementos(numberOfPage)"/>
+       </div>
+    </PagerContent>
     <GroupFooterTemplate>
-        <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" colspan="9">Total: @context.Items.Count()</MudTh>
+        <MudTh Class="mud-table-cell-custom-group mud-table-cell-custom-group-footer" colspan="10">Total: @context.Items.Count()</MudTh>
     </GroupFooterTemplate>
+
+    
    
 </MudTable>
 
@@ -179,12 +193,15 @@
     public bool EsRangoFecha = false;
     public DateTime? dateToFilter = null;
     public DateRange? rangoFecha;
+    private int _selected=1;
+    public const int NUMBER_ELEMENTS_PAGE = 10;
+    private bool _loading = true;
+    public string FiltroGeneral = string.Empty;
 
 
     public TableGroupDefinition<AuditLog> _groupDefinition;
 
     private IEnumerable<AuditLog> Elements = new List<AuditLog>();
-    private List<AuditLog> FilterElements = new List<AuditLog>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -192,27 +209,11 @@
 
     }
 
+
+
     public async Task InicializarElementos()
     {
-        var consRequest = new ConsultaAuditoriaOperacionRequest(){Cantidad=10, Omitir=0, Filtro=""};
-        Elements = new List<AuditLog>
-         {
-             new AuditLog()
-             {
-                 Accion="Abrir", NombreTabla="Nomina", ValorAnterior="A", ValorNuevo="B", FechaMaquina=new DateTime(2021, 6, 4),
-                 FechaSistema=new DateTime(2022, 1, 4), InterfazCliente="interf1", CodigoUsuario="Admin", NombreOficina="Matriz", RegistroValido=false
-             },
-              new AuditLog()
-             {
-                 Accion="Cerrar", NombreTabla="Componente", ValorAnterior="C", ValorNuevo="D", FechaMaquina=new DateTime(2021, 10, 4),
-                 FechaSistema=new DateTime(2021, 9, 4), InterfazCliente="interf2", CodigoUsuario="Carrillo", NombreOficina="Matriz", RegistroValido=false
-             },
-              new AuditLog()
-             {
-                 Accion="permanece", NombreTabla="Componente", ValorAnterior="F", ValorNuevo="G", FechaMaquina=new DateTime(2021, 8, 4),
-                 FechaSistema=new DateTime(2021, 9, 4), InterfazCliente="interf3", CodigoUsuario="Admin", NombreOficina="Checa", RegistroValido=true
-             }
-         };
+        await ObtenerElementos();
 
         modFiltroList = new List<ModeloFiltro>()
             {
@@ -228,11 +229,12 @@
             };
         condicionesList = new List<string>() {"Contiene", "No Es Igual", "Comienza Con", "Es Igual", "Termina Con" };
         condicionesDateList = new List<string>() {"Igual", "Mayor Que", "Menor Que", "Rango"};
-        FilterElements = new List<AuditLog>(Elements);
+
         camposModeloAgruparList = new List<string>()
             {
                 "Accion","Nombre de Tabla","Valor Anterior","Valor Nuevo", "Interfaz Cliente", "Codigo Usuario","Nombre Oficina", "Registro Válido"
             };
+        StateHasChanged();
     }
 
     public void Agrupar()
@@ -359,7 +361,7 @@
                         };
                     break;
                 }
-             case "Interfaz Cliente":
+            case "Interfaz Cliente":
                 {
                     return new TableGroupDefinition<AuditLog>()
                         {
@@ -429,7 +431,6 @@
 
     private void FilterFunc()
     {
-        FilterElements = new List<AuditLog>(Elements);
         string FiltroAplicar = string.Empty;
         int indicePropiedadFiltrar = -1;
 
@@ -455,19 +456,19 @@
             indicePropiedadFiltrar = modFiltroList.Select(x => x.NombrePropiedad).IndexOf(propiedadFiltrar); 
             modFiltroList[indicePropiedadFiltrar].EstaVisible=false;
             modFiltroList[indicePropiedadFiltrar].Condicion = FiltroAplicar.ExtraerCadenaEntreDosComas();
-            TraerElementosFiltrados(indicePropiedadFiltrar, strToAdd);
+            if(indicePropiedadFiltrar>=0)
+               TraerElementosFiltrados(indicePropiedadFiltrar, strToAdd);
         }
     }
 
     public void TraerElementosFiltrados(int index, string valorActualizar)
     {
-        if (index >= 0)
-        {
-            modFiltroList[index].ValorBusqueda = valorActualizar;
-            FilterElements = Elements.ToList().AplicarFiltrar(modFiltroList, _httpService);
-            AnularElementos();
-        }
-        StateHasChanged();
+        
+         modFiltroList[index].ValorBusqueda = valorActualizar;
+         FiltroGeneral =  modFiltroList.AplicarFiltrar();
+         AnularElementos();
+         ObtenerElementos(1).GetAwaiter().GetResult();
+        
     }
 
     void AnularElementos()
@@ -478,11 +479,35 @@
         buscarString = string.Empty;
     }
 
-    public async Task AgregarJWTHeader()
+    public async Task ObtenerElementos(int numberPage=1)
     {
-        UsuarioLogin usuarioLogin = await _localStorageService.GetItem<UsuarioLogin>("usuario") ?? null;
-        _httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", usuarioLogin.Token);
+        _loading = true;
+        var filtro = string.IsNullOrEmpty(FiltroGeneral) ? "" : FiltroGeneral;
+        var consRequest = new ConsultaAuditoriaOperacionRequest(){Cantidad=NUMBER_ELEMENTS_PAGE, Omitir=(numberPage-1)*NUMBER_ELEMENTS_PAGE, Filtro=filtro};
+        try
+        {
+            var respuesta = await _httpService.Post<ConsultaAuditoriaOperacionRequest, List<AuditLog>>("/api/Logs", consRequest);
+            if (respuesta.Exitoso)
+            {
+                Elements = respuesta.Response;
+            }
+
+            else
+                _toaster.Error("Fallo al Obtener Elementos");
+        }
+        catch(Exception)
+        {
+            _toaster.Error("Ha ocurrido un error con la consulta");
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+
     }
+
+
 
     
 }

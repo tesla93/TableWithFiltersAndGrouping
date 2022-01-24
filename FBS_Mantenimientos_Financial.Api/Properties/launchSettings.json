@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:5992",
+      "applicationUrl": "http://localhost:32710",
       "sslPort": 44332
     }
   },
@@ -14,8 +14,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "nativeDebugging": true,
-      "use64Bit": true
+      "use64Bit": true,
+      "nativeDebugging": true
     },
     "FBS_Mantenimientos_Financial.Api": {
       "commandName": "Project",
