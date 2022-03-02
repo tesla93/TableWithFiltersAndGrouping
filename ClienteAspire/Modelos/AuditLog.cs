@@ -18,7 +18,11 @@ namespace ClienteAspire.Modelos
         public string CodigoUsuario { get; set; }
         public string NombreOficina { get; set; }
         public bool RegistroValido { get; set; }
+    }
 
-
+    public class ComposeAuditLog
+    {
+        public List<AuditLog> Listado { get; set; }
+        public int Total { get; set; }
     }
 }

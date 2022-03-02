@@ -1,5 +1,6 @@
 ﻿using ClienteAspire.Modelos;
 using FBS_ComponentesDinamicos.Sevices;
+using Newtonsoft.Json.Linq;
 using System.Globalization;
 
 namespace ClienteAspire.Auxiliares
@@ -24,7 +25,7 @@ namespace ClienteAspire.Auxiliares
             return cadena.Substring(sFrom, sTo - sFrom).Trim();
         }
 
-        public static string AplicarFiltrar(this List<ModeloFiltro> modFiltroList)
+        public static string AplicarFiltrar(this IEnumerable<ModeloFiltro> modFiltroList)
         {
             string Filtros = string.Empty;
             
@@ -66,21 +67,20 @@ namespace ClienteAspire.Auxiliares
                             {
 
                                 var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
-
-                                filtroAgregar = $"DateTime.Equals(Convert.ToDateTime(e.{modFil.PropiedadLog}.ToString()).Date, {fechaAComparar})";
+                                filtroAgregar = $"DateTime.Compare(e.{modFil.PropiedadLog}.Date, Convert.ToDateTime(\"{fechaAComparar}\")) ==0";
                                 break;
                             }
                         case "Mayor Que":
                             {
                                 var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
-                                filtroAgregar = $"DateTime.Compare(DateTime.Parse(e.{modFil.PropiedadLog}.ToString()), {fechaAComparar}) > 0";
+                                filtroAgregar = $"DateTime.Compare(e.{modFil.PropiedadLog}.Date, Convert.ToDateTime(\"{fechaAComparar}\")) >0";
                                 break;
                             }
                         case "Menor Que":
                             {
-                                var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture).Date;
-
-                                filtroAgregar = $"DateTime.Compare(DateTime.Parse(e.{modFil.PropiedadLog}.ToString({Constantes.FORMATO_FECHA})), {fechaAComparar}) < 0";
+                                var fechaAComparar = DateTime.ParseExact(modFil.ValorBusqueda, Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture);                             
+                               
+                                filtroAgregar = $"DateTime.Compare(e.{modFil.PropiedadLog}.Date, Convert.ToDateTime(\"{fechaAComparar}\")) < 0";
                                 break;
                             }
                         case "Rango":
@@ -88,8 +88,8 @@ namespace ClienteAspire.Auxiliares
                                 var dates = modFil.ValorBusqueda.Split(new string[] { " -> " }, StringSplitOptions.RemoveEmptyEntries);
                                 var startDate = DateTime.ParseExact(dates[0], Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture);
                                 var endDate = DateTime.ParseExact(dates[1], Constantes.FORMATO_FECHA, CultureInfo.InvariantCulture);
-                                filtroAgregar = $"DateTime.Compare(DateTime.Parse(e.{modFil.PropiedadLog}.ToString()), {endDate}) <= 0 " +
-                                    $"and DateTime.Compare(DateTime.Parse(e.{modFil.PropiedadLog}.ToString()), {startDate}) >= 0";
+                                filtroAgregar = $"DateTime.Compare(e.{modFil.PropiedadLog}.Date, Convert.ToDateTime(\"{endDate}\")) <= 0 " +
+                                    $"and DateTime.Compare(e.{modFil.PropiedadLog}.Date, Convert.ToDateTime(\"{startDate}\")) >= 0";
                                 break;
                             }
                         default:
@@ -106,6 +106,35 @@ namespace ClienteAspire.Auxiliares
                
             }
             return Filtros;
+        }
+
+        public static List<AuditLog> ModificarJson(List<AuditLog> elementos)
+        {
+            for (int i = 0; i < elementos.Count(); i++)
+            {
+                string valorAnteriorArreglado = "";
+                string valorNuevoArreglado = "";
+                var jsonObject1 = JObject.Parse(elementos[i].ValorAnterior);
+                var jsonObject2 = JObject.Parse(elementos[i].ValorNuevo);
+                IList<string> keys = jsonObject2.Properties().Select(p => p.Name).ToList();
+
+                foreach (var key in keys)
+                {
+                    if (jsonObject1[key]?.ToString() != jsonObject2[key].ToString())
+                    {
+                        if (jsonObject1[key] != null)
+                        {
+                            valorAnteriorArreglado += $"{key}: {jsonObject1[key] ?? ""}, ";
+                        }
+                        else
+                            valorAnteriorArreglado = String.Empty;
+                        valorNuevoArreglado += $"{key}: {jsonObject2[key]}, ";
+                    }
+                }
+                elementos[i].ValorAnterior = valorAnteriorArreglado;
+                elementos[i].ValorNuevo = valorNuevoArreglado;
+            }
+            return elementos;
         }
 
     }

@@ -6,7 +6,8 @@
 @using System.Globalization
 @using System.Net.Http.Headers
 @using Newtonsoft.Json
-@inject HttpClient _httpclient
+@using Newtonsoft.Json.Linq
+@inject HttpClient _httpClient
 @inject IHttpService _httpService
 @attribute [Authorize]
 @inject ILocalStorageService _localStorageService
@@ -112,7 +113,7 @@
     </MudItem>
 </div>
 
-<MudTable Hover="true" Loading="_loading" Striped="true" Breakpoint="Breakpoint.Sm"  Height="auto" FixedHeader="true"
+<MudTable Hover="true" Loading="_loading" RowsPerPage="Elements.Count()" Striped="true" Breakpoint="Breakpoint.Sm"  Height="auto" FixedHeader="true"
           Items="@Elements"
           Class="mt-3"
           GroupBy="@(agrupacionesList.Any() ?_groupDefinition : null)"
@@ -133,7 +134,7 @@
     </ColGroup>
     <HeaderContent>
         <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.Accion)">Accion</MudTableSortLabel></MudTh>
-        <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.NombreTabla)">Nombre de Tabla</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.NombreTabla)">Tabla</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.ValorAnterior)">Valor Anterior</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.ValorNuevo)">Valor Nuevo</MudTableSortLabel></MudTh>
         <MudTh><MudTableSortLabel SortBy="new Func<AuditLog, object>(x=>x.FechaMaquina)">Fecha Maquina</MudTableSortLabel></MudTh>
@@ -148,9 +149,9 @@
     </GroupHeaderTemplate>
     <RowTemplate>
         <MudTd  DataLabel="Accion">@context.Accion</MudTd>
-        <MudTd DataLabel="Nombre de Tabla">@context.NombreTabla</MudTd>
-        <MudTd Style="width:10px;" DataLabel="Valor Anterior">@context.ValorAnterior</MudTd>
-        <MudTd Style="width:10px;" DataLabel="Valor Nuevo">@context.ValorNuevo</MudTd>
+        <MudTd DataLabel="Tabla">@context.NombreTabla</MudTd>
+        <MudTd Style="width:10px;" DataLabel="Anterior">@context.ValorAnterior</MudTd>
+        <MudTd Style="width:10px;" DataLabel="Nuevo">@context.ValorNuevo</MudTd>
         <MudTd DataLabel="Fecha Maquina'">@context.FechaMaquina.ToString(Constantes.FORMATO_FECHA)</MudTd>
         <MudTd DataLabel="Fecha Sistema">@context.FechaSistema.ToString(Constantes.FORMATO_FECHA)</MudTd>
         <MudTd DataLabel="Interfaz Cliente">@context.InterfazCliente</MudTd>
@@ -161,8 +162,26 @@
     </RowTemplate>
     
     <PagerContent >
-        <div class="d-flex flex-column align-end mt-3 pb-3">
-            <MudPagination  Color="Color.Primary" Count="4"  SelectedChanged="async (int numberOfPage)=> await ObtenerElementos(numberOfPage)"/>
+        <div class="row justify-content-end">
+                   
+        <div class="col-3">
+            <div class="row">
+            <span class="col-4 mt-4">Cantidad:</span>
+        <MudSelect T="int"  Variant="Variant.Text" @bind-Value="@ElementosPorPagina" Class="col-4" SelectedValuesChanged="ChangePaginacion" OffsetY="true" Margin="Margin.Dense" Dense="true">
+                    @foreach (var values in NumeroPaginas)
+                        {
+                            <MudSelectItem Value="@values"></MudSelectItem>
+                        }
+         </MudSelect>
+         </div>
+        </div>
+         
+
+        <div class="col-5">
+            <div class="d-flex flex-column align-end mt-3 pb-3">
+            <MudPagination  Color="Color.Primary" Count="CantidadPaginas"  Disabled="@_loading" SelectedChanged="async (int numberOfPage)=> await ObtenerElementos(numberOfPage, ElementosPorPagina)"/>
+        </div>
+        </div>        
        </div>
     </PagerContent>
     <GroupFooterTemplate>
@@ -194,9 +213,13 @@
     public DateTime? dateToFilter = null;
     public DateRange? rangoFecha;
     private int _selected=1;
-    public const int NUMBER_ELEMENTS_PAGE = 10;
     private bool _loading = true;
     public string FiltroGeneral = string.Empty;
+    public int CantidadPaginas { get; set; } = 10;
+    public int ElementosPorPagina { get; set; } = 10;
+    public int PaginaActual{ get; set; } = 1;
+    List<int> NumeroPaginas = new List<int> { 10, 20, 50, 100 };
+
 
 
     public TableGroupDefinition<AuditLog> _groupDefinition;
@@ -240,6 +263,11 @@
     public void Agrupar()
     {
         MostrarAgrupar = true;
+    }
+
+    public void ChangePaginacion()
+    {
+        ObtenerElementos(PaginaActual, ElementosPorPagina).GetAwaiter().GetResult();
     }
 
     public void AplicarAgrupar()
@@ -431,6 +459,7 @@
 
     private void FilterFunc()
     {
+        _loading = true;
         string FiltroAplicar = string.Empty;
         int indicePropiedadFiltrar = -1;
 
@@ -457,18 +486,17 @@
             modFiltroList[indicePropiedadFiltrar].EstaVisible=false;
             modFiltroList[indicePropiedadFiltrar].Condicion = FiltroAplicar.ExtraerCadenaEntreDosComas();
             if(indicePropiedadFiltrar>=0)
-               TraerElementosFiltrados(indicePropiedadFiltrar, strToAdd);
+                TraerElementosFiltrados(indicePropiedadFiltrar, strToAdd);
         }
     }
 
     public void TraerElementosFiltrados(int index, string valorActualizar)
     {
-        
-         modFiltroList[index].ValorBusqueda = valorActualizar;
-         FiltroGeneral =  modFiltroList.AplicarFiltrar();
-         AnularElementos();
-         ObtenerElementos(1).GetAwaiter().GetResult();
-        
+        modFiltroList[index].ValorBusqueda = valorActualizar;
+        FiltroGeneral =  modFiltroList.AplicarFiltrar();
+        AnularElementos();
+        ObtenerElementos().GetAwaiter().GetResult();
+
     }
 
     void AnularElementos()
@@ -479,21 +507,28 @@
         buscarString = string.Empty;
     }
 
-    public async Task ObtenerElementos(int numberPage=1)
+    public async Task ObtenerElementos(int numberPage=1, int elementosPagina=10)
     {
         _loading = true;
         var filtro = string.IsNullOrEmpty(FiltroGeneral) ? "" : FiltroGeneral;
-        var consRequest = new ConsultaAuditoriaOperacionRequest(){Cantidad=NUMBER_ELEMENTS_PAGE, Omitir=(numberPage-1)*NUMBER_ELEMENTS_PAGE, Filtro=filtro};
+        var consRequest = new ConsultaAuditoriaOperacionRequest(){Cantidad=elementosPagina, Omitir=(numberPage-1)*elementosPagina, Filtro=filtro};
         try
         {
-            var respuesta = await _httpService.Post<ConsultaAuditoriaOperacionRequest, List<AuditLog>>("/api/Logs", consRequest);
-            if (respuesta.Exitoso)
+
+            var respuesta = await _httpClient.PostAsJsonAsync("/api/Logs", consRequest);
+            var x = new List<AuditLog>();
+
+
+            if (respuesta.IsSuccessStatusCode)
             {
-                Elements = respuesta.Response;
+                var composeAuditLog =await respuesta.Content.ReadFromJsonAsync<ComposeAuditLog>();
+                CantidadPaginas = composeAuditLog.Total / elementosPagina;
+                
+                Elements= Utiles.ModificarJson(composeAuditLog.Listado);
             }
 
             else
-                _toaster.Error("Fallo al Obtener Elementos");
+                _toaster.Error($"Falló al Obtener Elementos");
         }
         catch(Exception)
         {

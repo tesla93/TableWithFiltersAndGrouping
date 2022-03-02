@@ -21,4 +21,10 @@ namespace FBS_Mantenimientos_Financial.Api.Controllers
 
 
     }
+
+    public class ComposeAuditLog
+    {
+        public List<AuditLog> Listado { get; set; }
+        public int Total{ get; set; }
+    }
 }

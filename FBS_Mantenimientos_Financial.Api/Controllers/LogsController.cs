@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,8 +21,7 @@ namespace FBS_Mantenimientos_Financial.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ConsultaLogs([FromBody] ConsultaAuditoriaOperacionRequest request, CancellationToken cancellationToken)
         {
-            LoginResponse loginResponse;
-
+            
             using (var client = new HttpClient())
             {
                 var loginRequest = new LoginRequest()
@@ -29,23 +29,20 @@ namespace FBS_Mantenimientos_Financial.Api.Controllers
                     Usuario = "AAMARO",
                     Password = "123456",
                     UsaHuellaDigital = false,
-                    Direcciones = new[] { string.Empty },
-                    FechaSistemaCliente = DateTime.Now,
                     Maquina = string.Empty,
                     NumeroDeIntento = 1,
                     IPMaquinaIngreso = "10.100.0.25"
                 };
                 var responseLogin = await client.PostAsJsonAsync(Constantes.URL_AUTH, loginRequest);
-                Console.WriteLine(responseLogin.StatusCode);
-                loginResponse = await responseLogin.Content.ReadFromJsonAsync<LoginResponse>();
-                Console.WriteLine(loginResponse.AccessToken);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkFBTUFSTyIsInJvbGUiOiJJbnRlcm5vIiwiRW1wcmVzYSI6IjEiLCJFcXVpcG9DbGllbnRlIjoiIiwiRmVjaGFTaXN0ZW1hIjoiMy8xLzIwMjIgMDowMDowMCIsIklQTWFxdWluYUluZ3Jlc28iOiIxMC4xMDAuMC4yNSIsIm5iZiI6MTY0MzA2MjI2MCwiZXhwIjoxNjQzMDY0MDYwLCJpYXQiOjE2NDMwNjIyNjAsImlzcyI6IlNpZml6U29mdF9Bc3BpcmUiLCJhdWQiOiJTaWZpelNvZnRfQXNwaXJlIn0.PWDDGtD5Hl2DFCvsnoI7eGQitvUoLYRJ-fX70q5ek8g");
+                
+                var loginResponse = await responseLogin.Content.ReadFromJsonAsync<LoginResponse>();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResponse?.AccessToken);
+                
                 var response = await client.PostAsJsonAsync(Constantes.URL_LOGS, request);
-                System.Console.WriteLine(response.StatusCode);
                 if (response.IsSuccessStatusCode)
                 {
-                    var auditLogsList = await response.Content.ReadFromJsonAsync<List<AuditLog>>();
-                    return Ok(auditLogsList);
+                    var composeAuditLog = await response.Content.ReadFromJsonAsync<ComposeAuditLog>();
+                    return Ok(composeAuditLog);
                 }
                 return BadRequest();
 
